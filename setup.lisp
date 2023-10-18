@@ -3,7 +3,5 @@
 
 (in-package #:varray)
 
-;; (use-package 'petalisp)
-
 (import '(petalisp::~ petalisp::~* petalisp::transform petalisp::to)
         'varray)

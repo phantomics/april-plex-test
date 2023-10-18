@@ -21,12 +21,6 @@
   (declare (ignore params))
   (petalisp:lazy-array-shape (vader-base varray)))
 
-;; (defmethod plex-of ((varray vader-reshape) &optional params)
-;;   "Find the shape of an array as from [⍴ shape]."
-;;   (declare (ignore params))
-;;   (petalisp:lazy-reshape (vader-base varray)
-;;                          (apply #'~ (shape-of varray))))
-
 (defmethod plex-of ((varray vader-reshape) &optional params)
   (let ((input (plex-of (vader-base varray))))
     (petalisp:with-lazy-arrays (input)
@@ -44,42 +38,6 @@
                             :collect (petalisp:lazy-reshape x (~ i (1+ i)) (~ i n k)))))
            (apply #'~ (rest (loop :for d :in (shape-of varray)
                                   :append (list ~ d))))))))))
-
-(defun apl-reshape (varray)
-  (let ((input (plex-of (vader-base varray))))
-    (petalisp:with-lazy-arrays (input)
-      (let* ((x (petalisp:lazy-reshape input (petalisp:flattening-reshaper)))
-             (k (size-of (vader-base varray)))
-             (n (size-of varray)))
-        (multiple-value-bind (q r) (floor n k)
-          (petalisp:lazy-reshape
-           (if (< q k)
-               (apply #'petalisp:lazy-stack 0
-                      (append (make-list q :initial-element x)
-                              (list (petalisp:lazy-reshape x (~ r)))))
-               (apply #'petalisp:lazy-fuse
-                      (loop for i below k
-                            collect
-                            (petalisp:lazy-reshape x (~ i (1+ i)) (~ i n k)))))
-           (apply #'~ (rest (loop :for d :in (shape-of varray)
-                                  :append (list ~ d))))))))))
-
-(defun apl-reshape (shape input)
-  (with-lazy-arrays (input)
-    (let* ((x (lazy-reshape input (flattening-reshaper)))
-           (k (lazy-array-size input))
-           (n (shape-size shape)))
-      (multiple-value-bind (q r) (floor n k)
-        (lazy-reshape
-         (if (< q k)
-             (apply #'lazy-stack 0
-                    (append (make-list q :initial-element x)
-                            (list (lazy-reshape x (~ r)))))
-             (apply #'lazy-fuse
-                    (loop for i below k
-                          collect
-                          (lazy-reshape x (~ i (1+ i)) (~ i n k)))))
-         shape)))))
 
 (defun plex-process (varray sbesize get-span output)
   (varray::effect varray output :format :plex)
